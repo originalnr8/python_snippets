@@ -1,4 +1,17 @@
-from re import A
+# Description #
+# Got a lot of badly patterned filenames? eg Powerpuff Girls - S01E02 - Motherfucking Mojo Jojo - 480p.DiVX.CockRocket.mp4
+# This is remove prefix filename duplication and suffix filename duplication chaning to above to 02 - Motherfucking Mojo Jojo.mp4
+# Got a folder with folder of folders with badly patterned filenames? It will do that too.
+# Just make sure everything is grouped in folders so a clean pattern can be discerned. eg all season 1 stuff in season 1 folder
+
+# Usage #
+#  FilenameSorting.py <path to folder>
+
+# Run types #
+# Debug run  - Will output a file showing the changes it will make padded to show exactly how.
+#            - Will also ask if the generic removal pattern discovered looks right
+# Normal run - Will just find generic removal pattern and rename everything
+
 import sys
 import os
 import datetime
@@ -6,7 +19,7 @@ import datetime
 generalised = ""
 
 def fetchPath():
-    #return "/Volumes/Refusal/Videos/MKV"
+    #return "/Volumes/Refusal/Videos/Daria/Season 04"
     arguments = sys.argv[1:]
     if len(arguments) >= 1:
         return arguments[0]
@@ -23,7 +36,12 @@ def listDirs(rootdir):
     return dirs
 
 def listFilenames(mypath):
-    onlyfiles = [f for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+    onlyfiles = []
+    #onlyfiles = [f for f in os.listdir(mypath) if os.path.isfile(os.path.join(mypath, f))]
+    for f in os.listdir(mypath):
+        if os.path.isfile(os.path.join(mypath, f)):
+            onlyfiles.append(f)
+
     return onlyfiles
 
 def split(word):
@@ -95,7 +113,8 @@ def removeFileExtensions(filenames):
     file = []
     for filename in filenames:
         idx = -1 * countFileExtension(filename)
-        file.append(filename[:idx])
+        if len(filename[:idx]) > 0:
+            file.append(filename[:idx])
     return file
 
 def reverseFilenames(filenames):
@@ -222,8 +241,11 @@ def process():
         if len(indices) == 0:
             continue
         # Check
-        answer = ContinueProcessing(createGeneric(files_noext[0], indices))
-        if answer == True:
+        if debug ==True:
+            answer = ContinueProcessing(createGeneric(files_noext[0], indices))
+            if answer == True:
+                renameFiles(dir, indices)
+        else:
             renameFiles(dir, indices)
 
 if askQuestion_YorN("Debug run: ") == "y":
